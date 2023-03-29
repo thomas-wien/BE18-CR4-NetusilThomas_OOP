@@ -28,7 +28,6 @@ function head($titel = " | Thomas ")
   <h1 class="vw-auto d-block display-5 position-absolute top-50 start-50 translate-middle text-center text-white bg-dark  bg-opacity-75 px-4 py-5">
       The Library</h1>
   </header>';
-  // include 'menue.php';
 }
 
 function htmlend()
