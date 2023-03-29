@@ -4,12 +4,11 @@ require_once 'actions/normalize.php';
 
 $sql = "SELECT * FROM item";
 $result = $mysqli->query($sql);
-// $result = mysqli_query($connect, $sql);
-$tbody = ''; //this variable will hold the body for the table
-// if (mysqli_num_rows($result)  > 0) {
+
+$tbody = '';
+
 if ($result->num_rows > 0) {
   $result->fetch_array(MYSQLI_ASSOC);
-  //  while ($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
   while ($row = $result->fetch_array(MYSQLI_ASSOC)) {
     $tbody .= " <div>
         <div class='card p-3 mb-5'>
@@ -37,7 +36,7 @@ if ($result->num_rows > 0) {
   $tbody =  "<tr><td colspan='10'><center>No Data Available </center></td></tr>";
 }
 $mysqli->close();
-// mysqli_close($connect);
+
 ?>
 <?php require_once 'inc/htmlhelper.php';
 head(" | Overview"); ?>
