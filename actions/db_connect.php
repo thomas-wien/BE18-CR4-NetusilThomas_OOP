@@ -8,7 +8,7 @@ if (str_contains($_SERVER['HTTP_HOST'], 'localhost')) {
     DEFINE("PASS", "");
     DEFINE("DB", "netusilcodefacto_be18_cr4_netusilthomas_biglibrary");
 } else {
-    // Codefactory
+    // Codefactory  
     DEFINE("HOST", "173.212.235.205");
     DEFINE("USER", "netusilcodefacto_thomas");
     DEFINE("PASS", "U9BcyKixxr44fSL");
