@@ -1,12 +1,21 @@
 <?php
 require_once 'actions/db_connect.php';
 
-if ($_GET['id']) {
-    $id = $_GET['id'];
-    $sql = "SELECT * FROM item WHERE id = {$id}";
+// Check if 'id' parameter is set in the GET request
+if (isset($_GET['id'])) {
+    // Sanitize the 'id' parameter to prevent SQL injection
+    $id = $mysqli->real_escape_string($_GET['id']);
+
+    // Prepare SQL query to select item by id
+    $sql = "SELECT * FROM item WHERE id = '{$id}'";
     $result = $mysqli->query($sql);
+
+    // Check if exactly one row is returned
     if ($result->num_rows == 1) {
+        // Fetch the data from the result set
         $data = $result->fetch_assoc();
+
+        // Assign fetched data to variables
         $title = $data['title'];
         $isbn = $data['isbn'];
         $short_description = $data['short_description'];
@@ -19,11 +28,17 @@ if ($_GET['id']) {
         $available = $data['available'];
         $picture = $data['picture'];
     } else {
+        // Redirect to error page if no or multiple rows are returned
         header("location: error.php");
+        exit(); // Stop further execution
     }
+
+    // Close the database connection
     $mysqli->close();
 } else {
+    // Redirect to error page if 'id' parameter is not set
     header("location: error.php");
+    exit(); // Stop further execution
 }
 ?>
 <?php require_once 'inc/htmlhelper.php';
@@ -50,7 +65,7 @@ head(" | Details"); ?>
                 <div class='card-body'>
                     <h5 class='card-title'><?= $author_first_name ?> <?= $author_last_name ?><h5>
                             <h5 class='card-title'><?= $title ?></h5>
-                            <p class='card-text'><?= $short_description ?></p>
+                            <p class='card-text'><?= nl2br($short_description) ?></p>
                             <p class='card-text'>ISBN: <?= $isbn ?></p>
                             <p class='card-text'>Type: <?= $item_type ?></p>
                             <p class='card-text'>Publisher Name: <?= $publisher_name ?></p>
@@ -64,3 +79,4 @@ head(" | Details"); ?>
 </div>
 
 <?php htmlend(); ?>
+

@@ -14,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $id = isset($_POST['id']) ? intval($_POST['id']) : 0; // Ensure that $id is an integer
     $title = validateInput('title');
     $isbn = validateInput('isbn');
-    $short_description = validateInput('short_description');
+    $short_description = isset($_POST['short_description']) ? $_POST['short_description'] : "";
     $item_type = (isset($_POST['item_type']) && $_POST['item_type'] != "Item Type") ? normalize($_POST['item_type']) : "BOOK";
     $author_first_name = validateInput('author_first_name');
     $author_last_name = validateInput('author_last_name');
@@ -28,6 +28,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     // Get picture file details
     $picture = file_upload($_FILES['picture']);
+
+    // Format the short description to handle line breaks
+    $short_description = str_replace(array("\r\n", "\r", "\n"), PHP_EOL, $short_description);
 
     // Prepare SQL statement to update item
     if ($picture->error === 0) {
