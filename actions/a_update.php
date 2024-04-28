@@ -3,47 +3,70 @@ require_once 'db_connect.php';
 require_once 'file_upload.php';
 require_once 'normalize.php';
 
-if ($_POST) {
-    $title = (isset($_POST['title'])) ? normalize($_POST['title']) : "";
-    $isbn = (isset($_POST['isbn'])) ? normalize($_POST['isbn']) : "";
-    $short_description = (isset($_POST['short_description'])) ? normalize($_POST['short_description']) : "";
-    $item_type = ((isset($_POST['item_type'])) && $_POST['item_type'] != "Item Type") ? normalize($_POST['item_type']) : "BOOK";
-    $author_first_name = (isset($_POST['author_first_name'])) ? normalize($_POST['author_first_name']) : "";
-    $author_last_name = (isset($_POST['author_last_name'])) ? normalize($_POST['author_last_name']) : "";
-    $publisher_name = (isset($_POST['publisher_name'])) ? normalize($_POST['publisher_name']) : "";
-    $publisher_address = (isset($_POST['publisher_address'])) ? normalize($_POST['publisher_address']) : "";
-    $publish_date = (isset($_POST['publish_date'])) ? normalize($_POST['publish_date']) : "2000-01-01";
-    // $available = (isset($_POST['available'])) ?normalize($_POST['available']) : 1;
-    $available = normalize($_POST['available']);
+// Function to normalize and validate inputs
+function validateInput($input)
+{
+    return isset($_POST[$input]) ? normalize($_POST[$input]) : "";
+}
 
-    $id = $_POST['id'];
-    //variable for upload pictures errors is initialised
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    // Sanitize and validate inputs
+    $id = isset($_POST['id']) ? intval($_POST['id']) : 0; // Ensure that $id is an integer
+    $title = validateInput('title');
+    $isbn = validateInput('isbn');
+    $short_description = validateInput('short_description');
+    $item_type = (isset($_POST['item_type']) && $_POST['item_type'] != "Item Type") ? normalize($_POST['item_type']) : "BOOK";
+    $author_first_name = validateInput('author_first_name');
+    $author_last_name = validateInput('author_last_name');
+    $publisher_name = validateInput('publisher_name');
+    $publisher_address = validateInput('publisher_address');
+    $publish_date = validateInput('publish_date');
+    $available = isset($_POST['available']) ? normalize($_POST['available']) : 1;
+
+    // Initialize variable for upload picture errors
     $uploadError = '';
 
-    $picture = file_upload($_FILES['picture']); //file_upload() called  
+    // Get picture file details
+    $picture = file_upload($_FILES['picture']);
+
+    // Prepare SQL statement to update item
     if ($picture->error === 0) {
-        ($_POST["picture"] == "product.png") ?: unlink("../pictures/$_POST[picture]");
+        // If picture upload is successful, delete previous picture if it's not the default one
+        if ($_POST["picture"] != "product.png") {
+            unlink("../pictures/$_POST[picture]");
+        }
         $sql = "UPDATE item SET title = ?, isbn = ?, short_description = ?, item_type = ?, author_first_name = ?, author_last_name = ?, publisher_name = ?, publisher_address = ?, publish_date = ?, available = ?, picture = ? WHERE id = ?";
         $stmt = $mysqli->prepare($sql);
         $stmt->bind_param("sssssssssssi", $title, $isbn, $short_description, $item_type, $author_first_name, $author_last_name, $publisher_name, $publisher_address, $publish_date, $available, $picture->fileName, $id);
     } else {
+        // If picture upload fails, update item without changing the picture
         $sql = "UPDATE item SET title = ?, isbn = ?, short_description = ?, item_type = ?, author_first_name = ?, author_last_name = ?, publisher_name = ?, publisher_address = ?, publish_date = ?, available = ? WHERE id = ?";
         $stmt = $mysqli->prepare($sql);
         $stmt->bind_param("ssssssssssi", $title, $isbn, $short_description, $item_type, $author_first_name, $author_last_name, $publisher_name, $publisher_address, $publish_date, $available, $id);
     }
+
+    // Execute the statement
     if ($stmt->execute()) {
         $class = "success";
         $message = "The record has been updated successfully";
         $uploadError = ($picture->error != 0) ? $picture->ErrorMessage : '';
     } else {
         $class = "danger";
-        $message = "Error while updating record : <br>" . mysqli_connect_error();
+        $message = "Error while updating record: <br>" . $mysqli->error;
         $uploadError = ($picture->error != 0) ? $picture->ErrorMessage : '';
     }
+
+    // Close the database connection
+    $stmt->close();
     $mysqli->close();
+
+    // Redirect to the index page
     header("location: ../index.php");
+    exit(); // Stop further execution
 } else {
+    // Redirect to error page if POST data is not received
     header("location: ../error.php");
+    exit(); // Stop further execution
 }
 ?>
 
